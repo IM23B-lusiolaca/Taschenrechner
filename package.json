@@ -7,6 +7,6 @@
     "start": "cd nextjs-calculator && npm run start"
   },
   "dependencies": {
-    "next": "15.4.7"
+    "next": "15.4.10"
   }
 }
