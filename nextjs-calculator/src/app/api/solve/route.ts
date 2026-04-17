@@ -101,10 +101,25 @@ if (isLinearOptimizationProblem(sanitizedProblem)) {
         final_answer: `Produce ${x} units of ${lp.variables.x} and ${y} units of ${lp.variables.y} for maximum profit of Fr. ${objectiveValue.toLocaleString()}.`,
         explanation: explanation
       });
+    } else {
+      // Linear optimization problem detected but not supported
+      return NextResponse.json(
+        { 
+          status: "error", 
+          message: "This linear optimization problem is not currently supported. Please try a different type of math problem." 
+        }, 
+        { status: 400 }
+      );
     }
   } catch (error) {
     console.error('Linear optimization error:', error);
-    // Fall through to AI if our solver fails
+    return NextResponse.json(
+      { 
+        status: "error", 
+        message: "Error solving linear optimization problem. Please try a different type of math problem." 
+      }, 
+      { status: 500 }
+    );
   }
 }
     
@@ -114,9 +129,9 @@ if (isLinearOptimizationProblem(sanitizedProblem)) {
       return NextResponse.json(
         { 
           status: "error", 
-          message: "Server configuration error" 
+          message: "AI calculation service is currently unavailable. Please try again later or contact support." 
         }, 
-        { status: 500 }
+        { status: 503 }
       );
     }
     
