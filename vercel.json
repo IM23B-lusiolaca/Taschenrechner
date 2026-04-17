@@ -1,6 +1,8 @@
 {
   "framework": "nextjs",
-  "buildCommand": "npm run build",
-  "outputDirectory": ".next"
+  "installCommand": "npm ci || npm install && cd nextjs-calculator && npm ci || npm install",
+  "buildCommand": "cd nextjs-calculator && npm run build",
+  "devCommand": "cd nextjs-calculator && npm run dev",
+  "outputDirectory": "nextjs-calculator/.next"
 }
 

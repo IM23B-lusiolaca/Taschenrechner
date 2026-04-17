@@ -1,0 +1,12 @@
+{
+  "name": "taschenrechner-root",
+  "private": true,
+  "scripts": {
+    "dev": "cd nextjs-calculator && npm run dev",
+    "build": "cd nextjs-calculator && npm run build",
+    "start": "cd nextjs-calculator && npm run start"
+  },
+  "dependencies": {
+    "next": "15.4.7"
+  }
+}
