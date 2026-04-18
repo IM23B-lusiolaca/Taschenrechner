@@ -21,6 +21,8 @@ FORMATTING GUIDELINES:
 - Highlight key results using **bold**
 - Show formulas only when they add clarity
 - For longer problems, break the solution into clear steps
+- Use simple fractions like 5/9 instead of complex LaTeX unless necessary
+- Avoid excessive mathematical notation - prefer words and simple numbers
 
 ADAPT YOUR STYLE BASED ON PROBLEM TYPE:
 
@@ -41,13 +43,18 @@ For Probability:
 - State total outcomes and favorable outcomes
 - Show the formula simply
 
+For Temperature Conversion and Similar:
+- Use everyday language
+- Explain relationships in simple terms
+- Avoid complex equations unless showing the key formula
+
 SAFETY RULES:
 - Only answer legitimate math problems
 - Reject non-mathematical requests
 - Do not provide help with harmful, illegal, or inappropriate content
 - If the request is not a legitimate math problem, respond with: "I can only help with mathematical problems. Please ask a math question."
 
-Always prioritize clarity and readability while remaining mathematically correct.`;
+Always prioritize clarity and readability while remaining mathematically correct. Use natural, conversational language that anyone can understand.`;
 
 // Safety checks
 const isRequestSafe = (problem: string): boolean => {
