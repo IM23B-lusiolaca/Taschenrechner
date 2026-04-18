@@ -56,6 +56,55 @@ describe('Solve API Route', () => {
     expect(response.status).toBe(400);
     expect(data.status).toBe('rejected');
   });
+
+  it('should parse answer/explanation format from AI', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        choices: [{
+          message: {
+            content: 'Answer: x = 5\nEXPLANATION: Subtract 5 from both sides.'
+          }
+        }]
+      })
+    });
+
+    const mockRequest = {
+      json: () => Promise.resolve({ problem: 'Solve 2x + 5 = 15' })
+    } as MockRequest;
+
+    const response = await POST(mockRequest as any);
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.status).toBe('success');
+    expect(data.final_answer).toBe('x = 5');
+    expect(data.explanation).toBe('Subtract 5 from both sides.');
+  });
+  
+  it('should reject explicit AI rejection strings', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        choices: [{
+          message: {
+            content: 'REJECTED: This content is not allowed.'
+          }
+        }]
+      })
+    });
+
+    const mockRequest = {
+      json: () => Promise.resolve({ problem: 'What is 2 + 2?' })
+    } as MockRequest;
+
+    const response = await POST(mockRequest as any);
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.status).toBe('rejected');
+    expect(data.message).toContain('not allowed');
+  });
   
   it('should reject empty problems', async () => {
     const mockRequest = {

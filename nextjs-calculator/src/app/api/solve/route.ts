@@ -27,12 +27,12 @@ Use LaTeX formatting for all mathematical expressions where it improves clarity.
 
 Use LaTeX for:
 
-* Fractions: (\\frac{a}{b})
+* Fractions: (\frac{a}{b})
 * Exponents: (x^2)
-* Roots: (\\sqrt{x})
-* Derivatives: (\\frac{d}{dx}(x^2))
-* Integrals: (\\int x^2 \\, dx)
-* Trigonometry: (\\sin(x), \\cos(x), \\tan(x))
+* Roots: (\sqrt{x})
+* Derivatives: (\frac{d}{dx}(x^2))
+* Integrals: (\int x^2 \, dx)
+* Trigonometry: (\sin(x), \cos(x), \tan(x))
 * Equations and transformations
 * Probability formulas
 
@@ -69,7 +69,7 @@ Use standard identities in LaTeX
 • Probability:
 Show formula clearly:
 [
-P(E) = \\frac{\\text{favorable outcomes}}{\\text{total outcomes}}
+P(E) = \frac{\text{favorable outcomes}}{\text{total outcomes}}
 ]
 
 • Word problems:
@@ -77,6 +77,16 @@ P(E) = \\frac{\\text{favorable outcomes}}{\\text{total outcomes}}
 * Briefly identify given values
 * Convert to equations (in LaTeX)
 * Solve step-by-step
+
+---
+
+SPECIAL GUIDANCE FOR PARAMETERS AND IDENTITIES
+
+If the problem asks for a parameter such as "solve for a" in an equation with x, determine whether the equation must hold for all values of x or only for specific values.
+
+* If it must hold for all x, compare coefficients of each power of x.
+* If any coefficient equation is inconsistent, clearly state that no valid solution exists.
+* Do not fabricate a solution when the equation is impossible or contradictory.
 
 ---
 
@@ -122,15 +132,15 @@ Find the derivative of (x^2 + 3x - 5)
 Differentiate term by term using the power rule:
 
 [
-\\frac{d}{dx}(x^2) = 2x
+\frac{d}{dx}(x^2) = 2x
 ]
 
 [
-\\frac{d}{dx}(3x) = 3
+\frac{d}{dx}(3x) = 3
 ]
 
 [
-\\frac{d}{dx}(-5) = 0
+\frac{d}{dx}(-5) = 0
 ]
 
 So the result is:
@@ -143,10 +153,10 @@ Example 3 (Probability):
 
 What is the probability of rolling a 6?
 
-**Answer:** (\\frac{1}{6}) (≈ 0.167 or 16.7%)
+**Answer:** (\frac{1}{6}) (≈ 0.167 or 16.7%)
 
 [
-P(6) = \\frac{1}{6}
+P(6) = \frac{1}{6}
 ]
 
 There are 6 equally likely outcomes, and only one favorable outcome.
@@ -155,16 +165,16 @@ Example 4 (Word Problem):
 
 A train travels 300 km in 4 hours.
 
-**Answer:** (75 \\text{ km/h})
+**Answer:** (75 \text{ km/h})
 
 Speed is given by:
 
 [
-\\text{Speed} = \\frac{\\text{Distance}}{\\text{Time}}
+\text{Speed} = \frac{\text{Distance}}{\text{Time}}
 ]
 
 [
-\\frac{300}{4} = 75
+\frac{300}{4} = 75
 ]
 
 ---
@@ -188,6 +198,48 @@ const sanitizeInput = (input: string): string => {
   // Remove excessive whitespace and limit length
   return input.trim().substring(0, 1000);
 };
+
+const parseAIResponse = (aiResponse: string) => {
+  const cleaned = aiResponse.trim();
+
+  if (/^REJECTED:/i.test(cleaned)) {
+    return {
+      rejected: true,
+      reason: cleaned.replace(/^REJECTED:\s*/i, '').trim() || 'Request rejected by AI safety filters'
+    };
+  }
+
+  const explanationSplit = cleaned.split(/EXPLANATION\s*:/i);
+  if (explanationSplit.length >= 2) {
+    const firstPart = explanationSplit[0].trim();
+    const answerMatch = firstPart.match(/^(?:FINAL ANSWER|Answer)\s*:\s*(.*)$/i);
+    const finalAnswer = answerMatch ? answerMatch[1].trim() : firstPart;
+    const explanation = explanationSplit.slice(1).join('EXPLANATION:').trim();
+    return { finalAnswer, explanation };
+  }
+
+  const answerMatch = cleaned.match(/^(?:FINAL ANSWER|Answer)\s*:\s*(.*)$/im);
+  if (answerMatch) {
+    const finalAnswer = answerMatch[1].trim();
+    const remainder = cleaned.slice(answerMatch.index! + answerMatch[0].length).trim();
+    const explanation = remainder || cleaned;
+    return { finalAnswer, explanation };
+  }
+
+  const noSolutionMatch = cleaned.match(/no (?:solution|valid value|possible value)|impossible/i);
+  if (noSolutionMatch) {
+    return {
+      finalAnswer: 'No solution exists for the given problem.',
+      explanation: cleaned
+    };
+  }
+
+  return {
+    finalAnswer: cleaned.split('\n')[0].trim() || cleaned,
+    explanation: cleaned
+  };
+};
+
 // Check if a problem is a linear optimization problem
 const isLinearOptimizationProblem = (problem: string): boolean => {
   // Simple heuristic to detect linear optimization problems
@@ -319,44 +371,23 @@ if (isLinearOptimizationProblem(sanitizedProblem)) {
     const data = await response.json();
     const aiResponse = data?.choices?.[0]?.message?.content || '';
     
-    // Check if request was rejected by AI
-    if (aiResponse.startsWith('REJECTED:')) {
-      const rejectionReason = aiResponse.substring(9).trim();
+    const parsedResponse = parseAIResponse(aiResponse);
+    if ((parsedResponse as any).rejected) {
       return NextResponse.json(
         { 
           status: "rejected", 
-          message: rejectionReason || "Request rejected by AI safety filters" 
+          message: (parsedResponse as any).reason || "Request rejected by AI safety filters" 
         }, 
         { status: 400 }
       );
-    }
-    
-    // Parse AI response
-    let finalAnswer = "";
-    let explanation = "";
-    
-    if (aiResponse.startsWith('FINAL ANSWER:')) {
-      const parts = aiResponse.split('EXPLANATION:');
-      if (parts.length >= 2) {
-        finalAnswer = parts[0].substring(13).trim(); // Remove "FINAL ANSWER:" prefix
-        explanation = parts[1].trim();
-      } else {
-        // Fallback if format is not as expected
-        finalAnswer = aiResponse.substring(13).trim();
-        explanation = "No detailed explanation provided.";
-      }
-    } else {
-      // Fallback if AI didn't follow format
-      finalAnswer = aiResponse.split('\n')[0] || aiResponse;
-      explanation = aiResponse;
     }
     
     // Return structured response
     return NextResponse.json({
       status: "success",
       task: sanitizedProblem,
-      final_answer: finalAnswer,
-      explanation: explanation
+      final_answer: parsedResponse.finalAnswer,
+      explanation: parsedResponse.explanation
     });
     
   } catch (error) {
